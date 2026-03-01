@@ -30,16 +30,35 @@ const ProtectedRoute = ({ children, requireAuth, requireAdmin, requireActive }) 
   return children;
 };
 
+import OneSignal from 'react-onesignal';
+import { registerFCMToken } from './utils/notifications';
+
 const App = () => {
-  const { setUser, setLoading } = useStore();
+  const { user, setUser, setLoading } = useStore();
 
   useEffect(() => {
+    // 1. OneSignal Init
+    OneSignal.init({
+      appId: 'YOUR_ONESIGNAL_APP_ID', // User will replace this
+      allowLocalhostAsSecureOrigin: true,
+      notifyButton: {
+        enable: true,
+        position: 'bottom-right',
+        theme: 'default'
+      }
+    });
+
     let unsubSnapshot = null;
+    // ... same code as before
 
     const unsubAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // Listen to user document changes in real-time
         const docRef = doc(db, 'users', firebaseUser.uid);
+
+        // Register Push Notifications
+        registerFCMToken(firebaseUser.uid);
+
         unsubSnapshot = onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
             setUser({ uid: firebaseUser.uid, ...docSnap.data() });

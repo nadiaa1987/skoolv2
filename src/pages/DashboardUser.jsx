@@ -47,6 +47,25 @@ const DashboardUser = () => {
                         </div>
                     </div>
                 </div>
+
+                <div className="card" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h3 style={{ margin: 0 }}>Notifications</h3>
+                        <span className="badge none" style={{ fontSize: '0.75rem' }}>Recent</span>
+                    </div>
+
+                    <div className="notification-list" style={{ flex: 1, overflowY: 'auto', maxHeight: '400px' }}>
+                        <p className="text-muted" style={{ fontSize: '0.9rem', textAlign: 'center', padding: '2rem 0' }}>
+                            Check the bell icon in the navigation bar to see your latest updates and notifications in real-time.
+                        </p>
+                        <div style={{ backgroundColor: '#f9fafb', padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+                            <h4 style={{ fontSize: '0.95rem', marginBottom: '0.5rem' }}>Quick Tip</h4>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                                We'll notify you here whenever a new course is added, or when your payments are approved. Stay tuned!
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

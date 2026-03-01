@@ -67,6 +67,17 @@ const CourseDetails = () => {
         );
     }
 
+    const normalizeVideoUrl = (url) => {
+        if (!url) return '';
+        const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+        const ytMatch = url.match(ytRegex);
+        if (ytMatch && ytMatch[1]) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+        const vimeoRegex = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/i;
+        const vimeoMatch = url.match(vimeoRegex);
+        if (vimeoMatch && vimeoMatch[1]) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+        return url;
+    };
+
     return (
         <div className="container-fluid" style={{ marginTop: '1rem' }}>
             <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
@@ -126,7 +137,7 @@ const CourseDetails = () => {
                             {selectedItem.video_url && (
                                 <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', marginBottom: '2rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
                                     <iframe
-                                        src={selectedItem.video_url}
+                                        src={normalizeVideoUrl(selectedItem.video_url)}
                                         title={selectedItem.title}
                                         style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
                                         allowFullScreen
@@ -140,9 +151,11 @@ const CourseDetails = () => {
                                 </div>
                             )}
 
-                            <div className="content-body" style={{ whiteSpace: 'pre-wrap', color: 'var(--text-main)', fontSize: '1.05rem', lineHeight: '1.8' }}>
-                                {selectedItem.body}
-                            </div>
+                            <div
+                                className="content-body"
+                                style={{ color: 'var(--text-main)', fontSize: '1.05rem', lineHeight: '1.8' }}
+                                dangerouslySetInnerHTML={{ __html: selectedItem.body }}
+                            />
                         </div>
                     ) : (
                         <div className="card text-center" style={{ padding: '5rem 2rem' }}>

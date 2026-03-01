@@ -13,10 +13,12 @@ const firebaseConfig = {
     measurementId: "G-MTJLTCSLXJ"
 };
 
+import { getMessaging } from "firebase/messaging";
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
     experimentalForceLongPolling: true,
 });
 export const storage = getStorage(app);
+export const messaging = getMessaging(app);
 export const googleProvider = new GoogleAuthProvider();

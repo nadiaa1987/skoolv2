@@ -1,19 +1,21 @@
 /* Reset and Variables */
 :root {
-  --bg-color: #f7f8f9;
+  --bg-color: #ffffff;
+  --bg-alt: #f8fafc;
   --panel-bg: #ffffff;
-  --text-main: #1f2328;
-  --text-muted: #656d76;
-  --border-color: #e5e7eb;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --border-color: #e2e8f0;
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
+  --accent-color: #f59e0b;
   --success-color: #10b981;
-  --success-hover: #059669;
   --danger-color: #ef4444;
-  --warning-color: #f59e0b;
-  --radius: 8px;
+  --radius: 12px;
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 * {
@@ -490,6 +492,48 @@ input:checked+.slider:before {
   width: 100%;
 }
 
+.quill-editor-wrapper {
+  margin-bottom: 2rem;
+}
+
+.ql-container {
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+  font-family: var(--font-family) !important;
+  font-size: 1rem !important;
+}
+
+.ql-toolbar {
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
+  background-color: #f9fafb;
+}
+
+.content-body h1 {
+  font-size: 2rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.content-body h2 {
+  font-size: 1.5rem;
+  margin: 1.25rem 0 0.75rem;
+}
+
+.content-body h3 {
+  font-size: 1.25rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.content-body p {
+  margin-bottom: 1rem;
+}
+
+.content-body ul,
+.content-body ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
 .lesson-list {
   display: flex;
   flex-direction: column;
@@ -509,7 +553,91 @@ input:checked+.slider:before {
   background-color: #f3f4f6;
 }
 
-.lesson-list-item.selected {
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fade {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.section-padding {
+  padding: 5rem 0;
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
   background-color: rgba(37, 99, 235, 0.1);
   color: var(--primary-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.heading-xl {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.heading-lg {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.heading-md {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .heading-xl {
+    font-size: 2.5rem;
+  }
+
+  .heading-lg {
+    font-size: 2rem;
+  }
+
+  .section-padding {
+    padding: 3rem 0;
+  }
 }

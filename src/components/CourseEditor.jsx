@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, getDocs, addDoc, updateDoc, deleteDoc, doc, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, addDoc, updateDoc, deleteDoc, doc, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const CourseEditor = ({ course, onBack }) => {
     const [items, setItems] = useState([]);
@@ -14,6 +16,27 @@ const CourseEditor = ({ course, onBack }) => {
     const [editImage, setEditImage] = useState('');
     const [editBody, setEditBody] = useState('');
     const [saving, setSaving] = useState(false);
+
+    // Normalize Video URL
+    const normalizeVideoUrl = (url) => {
+        if (!url) return '';
+
+        // YouTube regular and short URLs
+        const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+        const ytMatch = url.match(ytRegex);
+        if (ytMatch && ytMatch[1]) {
+            return `https://www.youtube.com/embed/${ytMatch[1]}`;
+        }
+
+        // Vimeo
+        const vimeoRegex = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/i;
+        const vimeoMatch = url.match(vimeoRegex);
+        if (vimeoMatch && vimeoMatch[1]) {
+            return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+        }
+
+        return url;
+    };
 
     useEffect(() => {
         if (!course?.id) return;
@@ -69,14 +92,16 @@ const CourseEditor = ({ course, onBack }) => {
         if (!selectedItem) return;
         setSaving(true);
         try {
+            const normalizedVideo = normalizeVideoUrl(editVideo);
             await updateDoc(doc(db, 'courses', course.id, 'content', selectedItem.id), {
                 title: editTitle,
-                video_url: editVideo,
+                video_url: normalizedVideo,
                 image_url: editImage,
                 body: editBody,
                 updated_at: new Date().toISOString()
             });
-            // Update local state if needed (onSnapshot handles it)
+            // Update local state for video if changed
+            setEditVideo(normalizedVideo);
         } catch (error) {
             console.error("Error saving item:", error);
         } finally {
@@ -94,6 +119,17 @@ const CourseEditor = ({ course, onBack }) => {
         } catch (error) {
             console.error("Error deleting item:", error);
         }
+    };
+
+    const quillModules = {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            ['link', 'image', 'video'],
+            [{ 'color': [] }, { 'background': [] }],
+            ['clean']
+        ],
     };
 
     if (loading) return <div>Loading course content...</div>;
@@ -173,13 +209,18 @@ const CourseEditor = ({ course, onBack }) => {
                         {selectedItem.type === 'page' && (
                             <>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Video Embed URL</label>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Video URL (YouTube/Vimeo)</label>
                                     <input
                                         type="text"
                                         value={editVideo}
                                         onChange={(e) => setEditVideo(e.target.value)}
-                                        placeholder="https://www.youtube.com/embed/..."
+                                        placeholder="https://www.youtube.com/watch?v=..."
                                     />
+                                    {editVideo && (
+                                        <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                            Normalized: {normalizeVideoUrl(editVideo)}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div>
@@ -193,13 +234,14 @@ const CourseEditor = ({ course, onBack }) => {
                                     {editImage && <img src={editImage} alt="Preview" style={{ marginTop: '1rem', maxWidth: '200px', borderRadius: 'var(--radius)' }} />}
                                 </div>
 
-                                <div>
+                                <div className="quill-editor-wrapper">
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Content / Description</label>
-                                    <textarea
+                                    <ReactQuill
+                                        theme="snow"
                                         value={editBody}
-                                        onChange={(e) => setEditBody(e.target.value)}
-                                        placeholder="Enter lesson content..."
-                                        rows="10"
+                                        onChange={setEditBody}
+                                        modules={quillModules}
+                                        style={{ height: '300px', marginBottom: '50px' }}
                                     />
                                 </div>
                             </>
