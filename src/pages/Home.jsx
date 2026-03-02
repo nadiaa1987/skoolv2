@@ -18,20 +18,13 @@ const Home = () => {
                     </p>
                     <div className="flex gap-1 animate-up" style={{ transitionDelay: '0.2s' }}>
                         <Link to="/auth" className="btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', fontWeight: 600, boxShadow: 'var(--shadow-lg)' }}>
-                            Join the Hub
+                            Join Now
                         </Link>
                         <Link to="/courses" className="btn-outline" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', fontWeight: 600, backgroundColor: 'white' }}>
                             View Courses
                         </Link>
                     </div>
 
-                    <div className="animate-up mt-2" style={{ transitionDelay: '0.3s', maxWidth: '1000px', width: '100%', borderRadius: 'var(--radius)', overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.12)', border: '1px solid var(--border-color)' }}>
-                        <img
-                            src="/passive_income_hero_mockup_1772387956196.png"
-                            alt="Academy Dashboard Preview"
-                            style={{ width: '100%', display: 'block' }}
-                        />
-                    </div>
 
                     <div className="animate-fade mt-2" style={{ transitionDelay: '0.4s', opacity: 0.7 }}>
                         <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Trusted by 5,000+ digital entrepreneurs worldwide</p>
@@ -133,7 +126,7 @@ const Home = () => {
 
             <footer style={{ padding: '2rem 0', borderTop: '1px solid var(--border-color)', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                 <div className="container">
-                    &copy; {new Date().getFullYear()} Digital Freedom Hub. All rights reserved.
+                    &copy; {new Date().getFullYear()} Web Skool Digital. All rights reserved.
                 </div>
             </footer>
         </div>

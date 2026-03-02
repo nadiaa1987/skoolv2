@@ -58,7 +58,7 @@ const Navbar = () => {
                         <polyline points="2 12 12 17 22 12"></polyline>
                     </svg>
                 </div>
-                Digital Freedom Hub
+                Web Skool Digital
             </Link>
 
             <div style={{ flex: 1 }}></div>

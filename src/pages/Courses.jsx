@@ -71,7 +71,8 @@ const Courses = () => {
                         {/* Course List */}
                         {courses.map(course => {
                             const isPaid = course.access_level === 'Buy now';
-                            const isUnlocked = isAdmin || !isPaid || (user?.unlocked_courses || []).includes(course.id);
+                            const isActive = user?.subscription_status === 'active';
+                            const isUnlocked = isAdmin || !isPaid || (isActive && (user?.unlocked_courses || []).includes(course.id));
 
                             return (
                                 <Link to={isUnlocked ? `/course/${course.id}` : `/payment?courseId=${course.id}`} key={course.id} className="card course-card">
@@ -107,7 +108,7 @@ const Courses = () => {
                                                         display: 'inline-block',
                                                         whiteSpace: 'nowrap'
                                                     }}>
-                                                        {isUnlocked ? 'UNLOCKED' : 'PAID'}
+                                                        {isUnlocked ? 'UNLOCKED' : `$${course.price || 99}`}
                                                     </span>
                                                 )}
                                                 {!isPaid && (

@@ -82,7 +82,10 @@ const DashboardAdmin = () => {
         });
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 30);
-        await updateDoc(doc(db, 'users', payment.user_id), { subscription_status: 'active', expiry_date: expiryDate.toISOString() });
+        await updateDoc(doc(db, 'users', payment.user_id), {
+            subscription_status: 'active',
+            expiry_date: expiryDate.toISOString()
+        });
         fetchData();
     };
 
@@ -257,6 +260,74 @@ const DashboardAdmin = () => {
                     </div>
                 )}
 
+                {activeTab === 'payments' && (
+                    <div className="card table-wrapper">
+                        <div className="flex justify-between items-center mb-1">
+                            <h3>Payment Requests</h3>
+                            <button className="btn-ghost" onClick={fetchData}>Refresh</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Course / Plan</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Receipt</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {payments.length === 0 ? (
+                                    <tr><td colSpan="7" className="text-center text-muted">No payment records found.</td></tr>
+                                ) : (
+                                    payments.map(p => (
+                                        <tr key={p.id}>
+                                            <td>{p.user_email}</td>
+                                            <td style={{ fontWeight: 600 }}>{p.course_title}</td>
+                                            <td style={{ color: 'var(--success-color)', fontWeight: 700 }}>${p.amount}</td>
+                                            <td style={{ fontSize: '0.8rem' }}>{new Date(p.created_at).toLocaleDateString()}</td>
+                                            <td>
+                                                <a href={p.screenshot_url} target="_blank" rel="noreferrer" style={{ color: 'var(--primary-color)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    View Receipt
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                                </a>
+                                            </td>
+                                            <td><span className={`badge ${p.status}`}>{p.status}</span></td>
+                                            <td>
+                                                {p.status === 'pending' && (
+                                                    <div className="flex gap-1" style={{ gap: '0.5rem' }}>
+                                                        <button
+                                                            className="btn-primary"
+                                                            style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', backgroundColor: 'var(--success-color)' }}
+                                                            onClick={() => handleApprovePayment(p)}
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            className="btn-outline"
+                                                            style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+                                                            onClick={() => handleRejectPayment(p)}
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                {p.status !== 'pending' && (
+                                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                        Processed on {p.approved_at ? new Date(p.approved_at).toLocaleDateString() : 'N/A'}
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
                 {activeTab === 'courses' && (
                     selectedCourse ? (
                         <CourseEditor course={selectedCourse} onBack={() => setSelectedCourse(null)} />
@@ -334,14 +405,119 @@ const DashboardAdmin = () => {
 
                 {showModal && activeTab === 'courses' && (
                     <div className="overlay">
-                        <div className="modal">
-                            <div className="modal-header"><h3>Add course</h3><button onClick={() => setShowModal(false)}>X</button></div>
+                        <div className="modal" style={{ maxWidth: '750px' }}>
+                            <div className="modal-header" style={{ borderBottom: 'none', paddingBottom: '0.5rem' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Add course</h3>
+                                <button className="btn-ghost" style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.9rem' }}>Import with key</button>
+                            </div>
+
                             <div className="modal-body flex-col gap-1">
-                                <input placeholder="Course name" value={title} onChange={e => setTitle(e.target.value)} />
-                                <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} />
-                                <input placeholder="Image URL" value={coverImage} onChange={e => setCoverImage(e.target.value)} />
-                                <input placeholder="Video URL" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} />
-                                <button className="btn-primary" onClick={handleAddCourse}>Add</button>
+                                <div className="flex-col" style={{ position: 'relative' }}>
+                                    <input
+                                        placeholder="Course name"
+                                        value={title}
+                                        onChange={e => setTitle(e.target.value)}
+                                        style={{ border: '1px solid var(--border-color)', padding: '1.25rem', fontSize: '1.1rem' }}
+                                    />
+                                    <span style={{ position: 'absolute', right: '1rem', bottom: '-1.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{title.length} / 50</span>
+                                </div>
+
+                                <div className="flex-col mt-1" style={{ position: 'relative' }}>
+                                    <textarea
+                                        placeholder="Course description"
+                                        value={description}
+                                        onChange={e => setDescription(e.target.value)}
+                                        style={{ minHeight: '120px', padding: '1.25rem', border: '1px solid var(--border-color)' }}
+                                    />
+                                    <span style={{ position: 'absolute', right: '1rem', bottom: '-1.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{description.length} / 500</span>
+                                </div>
+
+                                <div className="access-options mt-2">
+                                    {[
+                                        { id: 'Open', title: 'Open', desc: 'All members can access.' },
+                                        { id: 'Level unlock', title: 'Level unlock', desc: 'Members unlock at a specific level.' },
+                                        { id: 'Buy now', title: 'Buy now', desc: 'Members pay a 1-time price to unlock.' },
+                                        { id: 'Time unlock', title: 'Time unlock', desc: 'Members unlock after x days.' },
+                                        { id: 'Private', title: 'Private', desc: 'Members on a tier or specific members.' }
+                                    ].map(opt => (
+                                        <div
+                                            key={opt.id}
+                                            className={`access-option ${accessLevel === opt.id ? 'selected' : ''}`}
+                                            onClick={() => setAccessLevel(opt.id)}
+                                            style={{ padding: '1rem 0.5rem', borderRight: '1px solid var(--border-color)', cursor: 'pointer', textAlign: 'left', minHeight: '120px' }}
+                                        >
+                                            <div className="flex items-center gap-1 mb-1">
+                                                <div style={{
+                                                    width: '18px', height: '18px', borderRadius: '50%', border: accessLevel === opt.id ? '5px solid var(--primary-color)' : '2px solid #cbd5e1',
+                                                    flexShrink: 0
+                                                }}></div>
+                                                <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{opt.title}</span>
+                                            </div>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.3' }}>{opt.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {accessLevel === 'Buy now' && (
+                                    <div className="animate-up" style={{ backgroundColor: '#f9fafb', padding: '1.25rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)', marginTop: '1rem' }}>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 700, fontSize: '0.9rem' }}>Price ($)</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 600, color: 'var(--text-muted)' }}>$</span>
+                                            <input
+                                                type="number"
+                                                placeholder="99"
+                                                value={price}
+                                                onChange={e => setPrice(e.target.value)}
+                                                style={{ paddingLeft: '2rem', fontSize: '1.1rem', fontWeight: 600 }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="flex gap-2 items-center mt-1" style={{ backgroundColor: '#f9fafb', padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
+                                    <div style={{ width: '280px', height: '160px', backgroundColor: '#e2e8f0', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {coverImage ? (
+                                            <img src={coverImage} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        ) : (
+                                            <div className="text-muted" style={{ fontWeight: 600 }}>Preview Area</div>
+                                        )}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Cover</h4>
+                                        <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>1460 x 752 px</p>
+                                        <div className="flex-col gap-1">
+                                            <input
+                                                type="text"
+                                                placeholder="Paste image link here..."
+                                                value={coverImage}
+                                                onChange={e => setCoverImage(e.target.value)}
+                                                style={{ fontSize: '0.85rem', padding: '0.5rem' }}
+                                            />
+                                            <button className="btn-outline" style={{ width: 'max-content', padding: '0.5rem 1.5rem', fontWeight: 600 }}>CHANGE</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="modal-footer" style={{ borderTop: 'none', backgroundColor: 'transparent' }}>
+                                <div className="flex items-center gap-1">
+                                    <span style={{ fontWeight: 600, color: published ? 'var(--success-color)' : 'var(--text-muted)' }}>Published</span>
+                                    <label className="switch">
+                                        <input type="checkbox" checked={published} onChange={e => setPublished(e.target.checked)} />
+                                        <span className="slider"></span>
+                                    </label>
+                                </div>
+                                <div className="flex gap-1">
+                                    <button className="btn-ghost" onClick={() => setShowModal(false)} style={{ fontWeight: 700, color: 'var(--text-muted)' }}>CANCEL</button>
+                                    <button
+                                        className="btn-primary"
+                                        onClick={handleAddCourse}
+                                        disabled={submitting}
+                                        style={{ padding: '0.75rem 2rem', fontWeight: 700, backgroundColor: submitting ? '#e2e8f0' : '#e2e8f0', color: submitting ? '#94a3b8' : '#94a3b8' }}
+                                    >
+                                        {submitting ? 'ADDING...' : 'ADD'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

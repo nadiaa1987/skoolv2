@@ -59,9 +59,23 @@ const App = () => {
         // Register Push Notifications
         registerFCMToken(firebaseUser.uid);
 
-        unsubSnapshot = onSnapshot(docRef, (docSnap) => {
+        unsubSnapshot = onSnapshot(docRef, async (docSnap) => {
           if (docSnap.exists()) {
-            setUser({ uid: firebaseUser.uid, ...docSnap.data() });
+            const data = docSnap.data();
+
+            // Check for Auto-Expiry (30 days)
+            if (data.subscription_status === 'active' && data.expiry_date) {
+              const now = new Date();
+              const expiry = new Date(data.expiry_date);
+              if (now > expiry) {
+                // If expired, update status in DB
+                await updateDoc(docRef, { subscription_status: 'expired' });
+                // Note: The onSnapshot will refire with the new status
+                return;
+              }
+            }
+
+            setUser({ uid: firebaseUser.uid, ...data });
           } else {
             setUser(null);
           }
