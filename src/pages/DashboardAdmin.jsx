@@ -22,6 +22,8 @@ const DashboardAdmin = () => {
     const [price, setPrice] = useState(99);
     const [published, setPublished] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [editingCourse, setEditingCourse] = useState(null);
+    const [fakeMembers, setFakeMembers] = useState(0);
 
     // OneSignal Push Notification state
     const [pushTitle, setPushTitle] = useState('');
@@ -71,6 +73,14 @@ const DashboardAdmin = () => {
                 const unlocked = userSnap.data().unlocked_courses || [];
                 if (!unlocked.includes(payment.course_id)) {
                     await updateDoc(userRef, { unlocked_courses: [...unlocked, payment.course_id] });
+
+                    // Increment real_members_count on the course doc
+                    const courseRef = doc(db, 'courses', payment.course_id);
+                    const courseSnap = await getDoc(courseRef);
+                    if (courseSnap.exists()) {
+                        const currentRealCount = courseSnap.data().real_members_count || 0;
+                        await updateDoc(courseRef, { real_members_count: currentRealCount + 1 });
+                    }
                 }
             }
         }
@@ -137,7 +147,7 @@ const DashboardAdmin = () => {
         setSubmitting(true);
         try {
             const normalizedVideo = normalizeVideoUrl(videoUrl);
-            const newCourse = {
+            const courseData = {
                 title,
                 description,
                 price: Number(price),
@@ -145,26 +155,52 @@ const DashboardAdmin = () => {
                 video_url: normalizedVideo || 'https://www.youtube.com/embed/dQw4w9WgXcQ',
                 is_active: published,
                 access_level: accessLevel,
-                created_at: new Date().toISOString()
+                fake_members_count: Number(fakeMembers),
+                updated_at: new Date().toISOString()
             };
-            const docRef = doc(collection(db, 'courses'));
-            await setDoc(docRef, { id: docRef.id, ...newCourse });
-            if (published) {
-                await createNotification('broadcast', {
-                    title: 'New Course Available!',
-                    message: `Check out our new course: ${title}`,
-                    type: 'info',
-                    link: '/courses'
+
+            if (editingCourse) {
+                await updateDoc(doc(db, 'courses', editingCourse.id), courseData);
+            } else {
+                const docRef = doc(collection(db, 'courses'));
+                await setDoc(docRef, {
+                    id: docRef.id,
+                    ...courseData,
+                    created_at: new Date().toISOString()
                 });
+
+                if (published) {
+                    await createNotification('broadcast', {
+                        title: 'New Course Available!',
+                        message: `Check out our new course: ${title}`,
+                        type: 'info',
+                        link: '/courses'
+                    });
+                }
             }
+
             setShowModal(false);
-            setTitle(''); setDescription(''); setCoverImage(''); setVideoUrl(''); setPrice(99); setAccessLevel('Open'); setPublished(true);
+            setEditingCourse(null);
+            setTitle(''); setDescription(''); setCoverImage(''); setVideoUrl(''); setPrice(99); setAccessLevel('Open'); setPublished(true); setFakeMembers(0);
             fetchData();
         } catch (error) {
-            console.error("Error adding course", error);
+            console.error("Error saving course", error);
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const openEditModal = (course) => {
+        setEditingCourse(course);
+        setTitle(course.title || '');
+        setDescription(course.description || '');
+        setAccessLevel(course.access_level || 'Open');
+        setCoverImage(course.cover_image || '');
+        setVideoUrl(course.video_url || '');
+        setPrice(course.price || 99);
+        setFakeMembers(course.fake_members_count || 0);
+        setPublished(course.is_active !== undefined ? course.is_active : true);
+        setShowModal(true);
     };
 
     const handleSendOneSignalPush = async () => {
@@ -340,7 +376,10 @@ const DashboardAdmin = () => {
                                     <div className="course-card-content">
                                         <h3>{course.title}</h3>
                                         <div className="flex justify-between items-center mt-1">
-                                            <button className="btn-outline" onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course.id); }}>Delete</button>
+                                            <div className="flex gap-1">
+                                                <button className="btn-primary" style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }} onClick={(e) => { e.stopPropagation(); openEditModal(course); }}>Edit</button>
+                                                <button className="btn-outline" style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }} onClick={(e) => { e.stopPropagation(); handleDeleteCourse(course.id); }}>Delete</button>
+                                            </div>
                                             <span className={`badge ${course.is_active ? 'active' : 'none'}`}>{course.is_active ? 'Active' : 'Draft'}</span>
                                         </div>
                                     </div>
@@ -407,8 +446,8 @@ const DashboardAdmin = () => {
                     <div className="overlay">
                         <div className="modal" style={{ maxWidth: '750px' }}>
                             <div className="modal-header" style={{ borderBottom: 'none', paddingBottom: '0.5rem' }}>
-                                <h3 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Add course</h3>
-                                <button className="btn-ghost" style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.9rem' }}>Import with key</button>
+                                <h3 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{editingCourse ? 'Edit course' : 'Add course'}</h3>
+                                {!editingCourse && <button className="btn-ghost" style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: '0.9rem' }}>Import with key</button>}
                             </div>
 
                             <div className="modal-body flex-col gap-1">
@@ -474,6 +513,18 @@ const DashboardAdmin = () => {
                                     </div>
                                 )}
 
+                                <div style={{ backgroundColor: '#f9fafb', padding: '1.25rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)', marginTop: '1rem' }}>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 700, fontSize: '0.9rem' }}>Fake Members Count (Social Proof)</label>
+                                    <input
+                                        type="number"
+                                        placeholder="Enter number e.g. 500"
+                                        value={fakeMembers}
+                                        onChange={e => setFakeMembers(e.target.value)}
+                                        style={{ fontSize: '1.1rem', fontWeight: 600 }}
+                                    />
+                                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Real members who join will be added on top of this number.</p>
+                                </div>
+
                                 <div className="flex gap-2 items-center mt-1" style={{ backgroundColor: '#f9fafb', padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>
                                     <div style={{ width: '280px', height: '160px', backgroundColor: '#e2e8f0', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         {coverImage ? (
@@ -508,14 +559,14 @@ const DashboardAdmin = () => {
                                     </label>
                                 </div>
                                 <div className="flex gap-1">
-                                    <button className="btn-ghost" onClick={() => setShowModal(false)} style={{ fontWeight: 700, color: 'var(--text-muted)' }}>CANCEL</button>
+                                    <button className="btn-ghost" onClick={() => { setShowModal(false); setEditingCourse(null); }} style={{ fontWeight: 700, color: 'var(--text-muted)' }}>CANCEL</button>
                                     <button
                                         className="btn-primary"
                                         onClick={handleAddCourse}
                                         disabled={submitting}
-                                        style={{ padding: '0.75rem 2rem', fontWeight: 700, backgroundColor: submitting ? '#e2e8f0' : '#e2e8f0', color: submitting ? '#94a3b8' : '#94a3b8' }}
+                                        style={{ padding: '0.75rem 2rem', fontWeight: 700, backgroundColor: submitting ? '#e2e8f0' : 'var(--primary-color)', color: submitting ? '#94a3b8' : 'white' }}
                                     >
-                                        {submitting ? 'ADDING...' : 'ADD'}
+                                        {submitting ? 'SAVING...' : (editingCourse ? 'UPDATE' : 'ADD')}
                                     </button>
                                 </div>
                             </div>

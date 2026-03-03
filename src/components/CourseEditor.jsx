@@ -3,6 +3,7 @@ import { collection, query, addDoc, updateDoc, deleteDoc, doc, orderBy, onSnapsh
 import { db } from '../firebase/config';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import { uploadToR2, listObjectsR2 } from '../utils/r2';
 
 const CourseEditor = ({ course, onBack }) => {
     const [items, setItems] = useState([]);
@@ -16,6 +17,15 @@ const CourseEditor = ({ course, onBack }) => {
     const [editImage, setEditImage] = useState('');
     const [editBody, setEditBody] = useState('');
     const [saving, setSaving] = useState(false);
+
+    // Video Upload & Library State
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadError, setUploadError] = useState('');
+    const [showLibrary, setShowLibrary] = useState(false);
+    const [libraryItems, setLibraryItems] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [loadingLibrary, setLoadingLibrary] = useState(false);
 
     // Normalize Video URL
     const normalizeVideoUrl = (url) => {
@@ -108,6 +118,59 @@ const CourseEditor = ({ course, onBack }) => {
             setSaving(false);
         }
     };
+
+    const handleVideoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Check file type (optional, user specifically asked for AVI)
+        // if (!file.type.includes('video')) {
+        //     setUploadError("Please select a valid video file.");
+        //     return;
+        // }
+
+        setUploading(true);
+        setUploadProgress(0);
+        setUploadError('');
+
+        try {
+            const result = await uploadToR2(file, (progress) => {
+                setUploadProgress(progress);
+            });
+
+            // Set the video URL to the uploaded R2 URL
+            setEditVideo(result.url);
+            alert("Video uploaded successfully to Cloudflare R2!");
+        } catch (error) {
+            console.error("Upload failed:", error);
+            setUploadError("Upload failed: " + error.message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const fetchLibrary = async () => {
+        setLoadingLibrary(true);
+        setShowLibrary(true);
+        try {
+            const files = await listObjectsR2();
+            setLibraryItems(files);
+        } catch (error) {
+            console.error("Library fetch failed:", error);
+            setUploadError("Could not load library.");
+        } finally {
+            setLoadingLibrary(false);
+        }
+    };
+
+    const handleSelectLibraryItem = (url) => {
+        setEditVideo(url);
+        setShowLibrary(false);
+    };
+
+    const filteredLibrary = libraryItems.filter(item =>
+        item.key.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const handleDeleteItem = async (itemId) => {
         if (!window.confirm("Are you sure?")) return;
@@ -209,16 +272,100 @@ const CourseEditor = ({ course, onBack }) => {
                         {selectedItem.type === 'page' && (
                             <>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Video URL (YouTube/Vimeo)</label>
-                                    <input
-                                        type="text"
-                                        value={editVideo}
-                                        onChange={(e) => setEditVideo(e.target.value)}
-                                        placeholder="https://www.youtube.com/watch?v=..."
-                                    />
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Video (Cloudflare R2 Upload or URL)</label>
+
+                                    <div className="flex-col gap-1" style={{ backgroundColor: '#f9fafb', padding: '1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)', marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <input
+                                                type="file"
+                                                accept="video/*,.avi"
+                                                onChange={handleVideoUpload}
+                                                disabled={uploading}
+                                                id="video-upload"
+                                                style={{ display: 'none' }}
+                                            />
+                                            <label
+                                                htmlFor="video-upload"
+                                                className="btn-outline"
+                                                style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: uploading ? 'not-allowed' : 'pointer', backgroundColor: 'white' }}
+                                            >
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                                {uploading ? 'Uploading...' : 'Upload Video to R2'}
+                                            </label>
+
+                                            {uploading && (
+                                                <div style={{ flex: 1, height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                                                    <div style={{ width: `${uploadProgress}%`, height: '100%', backgroundColor: 'var(--primary-color)', transition: 'width 0.3s' }}></div>
+                                                </div>
+                                            )}
+
+                                            <button
+                                                className="btn-outline"
+                                                onClick={fetchLibrary}
+                                                style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'white' }}
+                                            >
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                                Browse Library
+                                            </button>
+                                        </div>
+
+                                        {showLibrary && (
+                                            <div className="card mt-1" style={{ position: 'relative', zIndex: 100, border: '1px solid var(--border-color)', backgroundColor: 'white', maxHeight: '350px', display: 'flex', flexDirection: 'column' }}>
+                                                <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border-color)', position: 'sticky', top: 0, backgroundColor: 'white', zIndex: 110 }}>
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <h4 style={{ margin: 0, fontSize: '0.9rem' }}>R2 Video Library</h4>
+                                                        <button className="btn-ghost" onClick={() => setShowLibrary(false)} style={{ padding: '0.2rem' }}>&times;</button>
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Search videos by name..."
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                        style={{ fontSize: '0.8rem', padding: '0.5rem' }}
+                                                    />
+                                                </div>
+                                                <div style={{ overflowY: 'auto', flex: 1, padding: '0.5rem' }}>
+                                                    {loadingLibrary ? (
+                                                        <div className="text-center p-2 text-muted">Loading...</div>
+                                                    ) : filteredLibrary.length === 0 ? (
+                                                        <div className="text-center p-2 text-muted">No videos found.</div>
+                                                    ) : (
+                                                        filteredLibrary.map(item => (
+                                                            <div
+                                                                key={item.key}
+                                                                onClick={() => handleSelectLibraryItem(item.url)}
+                                                                style={{ padding: '0.6rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', flexDirection: 'column', borderBottom: '1px solid #f1f5f9' }}
+                                                                className="btn-ghost"
+                                                            >
+                                                                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', wordBreak: 'break-all' }}>{item.key}</span>
+                                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{(item.size / 1024 / 1024).toFixed(2)} MB • {new Date(item.lastModified).toLocaleDateString()}</span>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {uploadProgress > 0 && uploading && (
+                                            <p style={{ fontSize: '0.8rem', color: 'var(--primary-color)', fontWeight: 600 }}>Progress: {uploadProgress}%</p>
+                                        )}
+
+                                        {uploadError && <p style={{ fontSize: '0.8rem', color: 'var(--danger-color)' }}>{uploadError}</p>}
+
+                                        <div style={{ marginTop: '0.5rem' }}>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Or paste a direct URL (YouTube, Vimeo, R2):</p>
+                                            <input
+                                                type="text"
+                                                value={editVideo}
+                                                onChange={(e) => setEditVideo(e.target.value)}
+                                                placeholder="https://..."
+                                            />
+                                        </div>
+                                    </div>
+
                                     {editVideo && (
-                                        <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                            Normalized: {normalizeVideoUrl(editVideo)}
+                                        <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-main)', padding: '0.5rem', backgroundColor: '#eff6ff', borderRadius: '8px' }}>
+                                            <strong>Video Link:</strong> <span style={{ wordBreak: 'break-all' }}>{editVideo}</span>
                                         </div>
                                     )}
                                 </div>

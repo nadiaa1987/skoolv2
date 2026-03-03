@@ -43,7 +43,25 @@ const CourseDetails = () => {
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        // Content protection: Block common inspection shortcuts
+        const handleKeyDown = (e) => {
+            if (
+                e.keyCode === 123 || // F12
+                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // Ctrl+Shift+I/J/C
+                (e.metaKey && e.altKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // Cmd+Opt+I/J/C (Mac)
+                (e.ctrlKey && e.keyCode === 85) || // Ctrl+U
+                (e.metaKey && e.keyCode === 85) // Cmd+U
+            ) {
+                e.preventDefault();
+                return false;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            unsubscribe();
+            window.removeEventListener('keydown', handleKeyDown);
+        };
     }, [id]);
 
     if (loading) return <div className="container mt-2 text-center">Loading course...</div>;
@@ -78,47 +96,74 @@ const CourseDetails = () => {
         return url;
     };
 
+    const isR2orDirect = (url) => {
+        if (!url) return false;
+        return url.includes('cloudflarestorage.com') || url.includes('r2.dev') || url.match(/\.(mp4|webm|ogg|mov|avi)$/i);
+    };
+
+    const normalizedVideo = normalizeVideoUrl(selectedItem.video_url);
+
     return (
-        <div className="container-fluid" style={{ marginTop: '1rem' }}>
-            <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
+        <div className="container-fluid mobile-classroom" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+            <div className="classroom-layout" style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start', width: '100%', maxWidth: '1280px' }}>
 
                 {/* Sidebar */}
-                <div style={{ width: '320px', flexShrink: 0 }}>
-                    <button className="btn-outline mb-1 w-full" onClick={() => navigate('/courses')} style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
-                        &larr; Back to Courses
+                <div className="classroom-sidebar" style={{ width: '320px', flexShrink: 0 }}>
+                    <button className="btn-outline mb-1 w-full" onClick={() => navigate('/courses')} style={{ textAlign: 'left', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+                        Back to Courses
                     </button>
 
-                    <div className="card" style={{ padding: '1rem', position: 'sticky', top: '80px' }}>
-                        <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>{course.title}</h3>
-                        <div style={{ backgroundColor: '#f3f4f6', height: '8px', borderRadius: '4px', marginBottom: '1.5rem', overflow: 'hidden' }}>
-                            <div style={{ backgroundColor: 'var(--success-color)', width: '0%', height: '100%', transition: 'width 0.3s' }}></div>
+                    <div className="card" style={{ padding: '0', position: 'sticky', top: '80px', border: 'none', background: 'white' }}>
+                        <div style={{ padding: '1.5rem 1.5rem 0.5rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-main)', flex: 1 }}>{course.title}</h3>
+                            <button className="btn-ghost" style={{ padding: '0', color: 'var(--text-muted)' }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                            </button>
                         </div>
 
-                        <div className="lesson-list">
+                        {/* Progress Bar with Percentage */}
+                        <div style={{ padding: '0 1.5rem 1.5rem 1.5rem' }}>
+                            <div style={{ backgroundColor: '#f3f4f6', height: '24px', borderRadius: '12px', overflow: 'hidden', position: 'relative', marginTop: '1rem' }}>
+                                <div style={{ backgroundColor: '#10b981', width: '100%', height: '100%', transition: 'width 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 'bold' }}>100%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="lesson-list" style={{ padding: '0 0.5rem 1rem 0.5rem' }}>
                             {items.map(item => (
                                 <div
                                     key={item.id}
                                     onClick={() => item.type === 'page' && setSelectedItem(item)}
                                     style={{
-                                        padding: '0.75rem',
-                                        borderRadius: 'var(--radius)',
+                                        padding: '0.85rem 1rem',
+                                        borderRadius: '12px',
                                         cursor: item.type === 'page' ? 'pointer' : 'default',
                                         display: 'flex',
                                         alignItems: 'center',
+                                        justifyContent: 'space-between',
                                         gap: '10px',
-                                        marginBottom: '0.25rem',
-                                        backgroundColor: selectedItem?.id === item.id ? 'rgba(37, 99, 235, 0.1)' : 'transparent',
-                                        color: selectedItem?.id === item.id ? 'var(--primary-color)' : 'inherit',
+                                        marginBottom: '0.15rem',
+                                        backgroundColor: selectedItem?.id === item.id ? '#fef3c7' : 'transparent',
+                                        color: selectedItem?.id === item.id ? '#92400e' : 'var(--text-main)',
                                         fontWeight: item.type === 'folder' ? '700' : '500',
-                                        marginTop: item.type === 'folder' ? '1rem' : '0'
+                                        border: 'none',
+                                        transition: 'all 0.2s'
                                     }}
                                 >
-                                    {item.type === 'folder' ? (
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                                    ) : (
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><polyline points="9 11 12 14 22 4"></polyline></svg>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                                        {item.type === 'folder' ? (
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                        ) : null}
+                                        <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+                                    </div>
+
+                                    {item.type === 'page' && (
+                                        <div style={{ color: '#10b981', flexShrink: 0 }}>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
+                                        </div>
                                     )}
-                                    <span style={{ fontSize: '0.9rem' }}>{item.title}</span>
                                 </div>
                             ))}
                         </div>
@@ -126,22 +171,51 @@ const CourseDetails = () => {
                 </div>
 
                 {/* Main Content */}
-                <div style={{ flex: 1 }}>
+                <div className="classroom-main" style={{ flex: 1, maxWidth: '740px' }}>
                     {selectedItem ? (
-                        <div className="card" style={{ padding: '2rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                <h1 style={{ fontSize: '1.75rem', margin: 0 }}>{selectedItem.title}</h1>
-                                <button className="btn-success">Complete</button>
+                        <div className="card" style={{ padding: '2rem', border: 'none', background: 'white' }}>
+                            <div className="classroom-content-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                                <h1 style={{ fontSize: '1.45rem', fontWeight: 'bold', margin: 0, color: 'var(--text-main)' }}>{selectedItem.title}</h1>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <div style={{ color: '#10b981' }}>
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
+                                    </div>
+                                </div>
                             </div>
 
                             {selectedItem.video_url && (
-                                <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', marginBottom: '2rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                                    <iframe
-                                        src={normalizeVideoUrl(selectedItem.video_url)}
-                                        title={selectedItem.title}
-                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
-                                        allowFullScreen
-                                    />
+                                <div
+                                    style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', marginBottom: '2rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', backgroundColor: '#000' }}
+                                    onContextMenu={(e) => e.preventDefault()}
+                                >
+                                    {/* Invisible Shield - Blocks direct right-click on the video stream */}
+                                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: '60px', zIndex: 5, cursor: 'default' }}></div>
+
+                                    {isR2orDirect(selectedItem.video_url) ? (
+                                        <>
+                                            <video
+                                                src={selectedItem.video_url}
+                                                controls
+                                                controlsList="nodownload noplaybackrate"
+                                                disablePictureInPicture
+                                                playsInline
+                                                onContextMenu={(e) => e.preventDefault()}
+                                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                                            />
+                                            {selectedItem.video_url.toLowerCase().endsWith('.avi') && (
+                                                <div style={{ position: 'absolute', bottom: '10px', left: '10px', right: '10px', backgroundColor: 'rgba(0,0,0,0.7)', color: 'white', padding: '5px 10px', borderRadius: '4px', fontSize: '0.7rem', zIndex: 10 }}>
+                                                    ⚠️ Note: AVI format may not play in some browsers. We recommend using <strong>MP4</strong>.
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <iframe
+                                            src={normalizedVideo}
+                                            title={selectedItem.title}
+                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                                            allowFullScreen
+                                        />
+                                    )}
                                 </div>
                             )}
 
@@ -153,9 +227,66 @@ const CourseDetails = () => {
 
                             <div
                                 className="content-body"
-                                style={{ color: 'var(--text-main)', fontSize: '1.05rem', lineHeight: '1.8' }}
+                                style={{
+                                    color: 'var(--text-main)',
+                                    fontSize: '0.9rem',
+                                    lineHeight: '1.6',
+                                    borderTop: '1px solid #f1f5f9',
+                                    paddingTop: '2rem',
+                                    marginTop: '1rem',
+                                    wordBreak: 'break-word',
+                                    overflowWrap: 'anywhere'
+                                }}
                                 dangerouslySetInnerHTML={{ __html: selectedItem.body }}
                             />
+
+                            <style>{`
+                                .content-body img {
+                                    max-width: 100%;
+                                    height: auto;
+                                    border-radius: 8px;
+                                    margin: 1.5rem 0;
+                                    display: block;
+                                }
+                                .content-body p {
+                                    margin-bottom: 1rem;
+                                }
+                                .content-body a {
+                                    color: var(--primary-color);
+                                    text-decoration: underline;
+                                }
+
+                                /* Mobile Responsiveness */
+                                @media (max-width: 768px) {
+                                    .classroom-layout {
+                                        flex-direction: column !important;
+                                        padding: 0 1rem;
+                                        gap: 1.5rem !important;
+                                    }
+                                    .classroom-sidebar {
+                                        width: 100% !important;
+                                        order: 2;
+                                    }
+                                    .classroom-sidebar .card {
+                                        position: static !important;
+                                        margin-bottom: 2rem;
+                                    }
+                                    .classroom-main {
+                                        width: 100% !important;
+                                        max-width: 100% !important;
+                                        order: 1;
+                                    }
+                                    .classroom-main .card {
+                                        padding: 1.25rem !important;
+                                    }
+                                    .classroom-content-header {
+                                        margin-bottom: 1rem !important;
+                                    }
+                                    .classroom-content-header h1 {
+                                        font-size: 1.2rem !important;
+                                    }
+                                }
+                            `}</style>
                         </div>
                     ) : (
                         <div className="card text-center" style={{ padding: '5rem 2rem' }}>
