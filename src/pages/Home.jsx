@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useStore } from '../store/useStore';
 
 const Home = () => {
+    const { user } = useStore();
+
     return (
         <div className="home-wrapper">
             {/* Hero Section */}
@@ -17,9 +20,15 @@ const Home = () => {
                         Stop trading your time for money. Master the art of digital assets, SaaS automation, and high-convert SEO strategies to secure your financial future.
                     </p>
                     <div className="flex gap-1 animate-up" style={{ transitionDelay: '0.2s' }}>
-                        <Link to="/auth" className="btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', fontWeight: 600, boxShadow: 'var(--shadow-lg)' }}>
-                            Join Now
-                        </Link>
+                        {user ? (
+                            <Link to="/dashboard" className="btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', fontWeight: 600, boxShadow: 'var(--shadow-lg)' }}>
+                                Go to Dashboard
+                            </Link>
+                        ) : (
+                            <Link to="/auth" className="btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', fontWeight: 600, boxShadow: 'var(--shadow-lg)' }}>
+                                Join Now
+                            </Link>
+                        )}
                         <Link to="/courses" className="btn-outline" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', fontWeight: 600, backgroundColor: 'white' }}>
                             View Courses
                         </Link>
@@ -101,28 +110,40 @@ const Home = () => {
 
                         <div className="card glass animate-up" style={{ padding: '3rem', position: 'relative', overflow: 'hidden' }}>
                             <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', backgroundColor: 'var(--primary-color)', opacity: 0.1, borderRadius: '50%' }}></div>
-                            <h3 className="heading-md mb-1">Join the Passive Income Revolution</h3>
-                            <p className="mb-2">Get access to over 50+ hours of premium video content, direct mentorship, and a community of like-minded builders.</p>
-                            <Link to="/auth" className="btn-primary w-full text-center" style={{ display: 'block', padding: '1rem' }}>
-                                Create Your Free Account
-                            </Link>
+                            <h3 className="heading-md mb-1">{user ? 'Ready to continue learning?' : 'Join the Passive Income Revolution'}</h3>
+                            <p className="mb-2">
+                                {user
+                                    ? 'Head over to the classroom to access your courses and community updates.'
+                                    : 'Get access to over 50+ hours of premium video content, direct mentorship, and a community of like-minded builders.'}
+                            </p>
+                            {user ? (
+                                <Link to="/courses" className="btn-primary w-full text-center" style={{ display: 'block', padding: '1rem' }}>
+                                    Go to Classroom
+                                </Link>
+                            ) : (
+                                <Link to="/auth" className="btn-primary w-full text-center" style={{ display: 'block', padding: '1rem' }}>
+                                    Create Your Free Account
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Footer-like CTA */}
-            <section className="section-padding" style={{ backgroundColor: 'var(--text-main)', color: 'white' }}>
-                <div className="container text-center">
-                    <h2 className="heading-lg mb-1" style={{ color: 'white' }}>Ready to Scale Your Digital Empire?</h2>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.25rem', maxWidth: '700px', margin: '0 auto 2.5rem' }}>
-                        The difference between dreaming and doing is the right framework. Start building today.
-                    </p>
-                    <Link to="/auth" className="btn-primary" style={{ backgroundColor: 'white', color: 'var(--text-main)', padding: '1.25rem 3rem', fontSize: '1.2rem', fontWeight: 800 }}>
-                        Enroll Now
-                    </Link>
-                </div>
-            </section>
+            {/* Footer-like CTA (Only for Guests) */}
+            {!user && (
+                <section className="section-padding" style={{ backgroundColor: 'var(--text-main)', color: 'white' }}>
+                    <div className="container text-center">
+                        <h2 className="heading-lg mb-1" style={{ color: 'white' }}>Ready to Scale Your Digital Empire?</h2>
+                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.25rem', maxWidth: '700px', margin: '0 auto 2.5rem' }}>
+                            The difference between dreaming and doing is the right framework. Start building today.
+                        </p>
+                        <Link to="/auth" className="btn-primary" style={{ backgroundColor: 'white', color: 'var(--text-main)', padding: '1.25rem 3rem', fontSize: '1.2rem', fontWeight: 800 }}>
+                            Enroll Now
+                        </Link>
+                    </div>
+                </section>
+            )}
 
             <footer style={{ padding: '2rem 0', borderTop: '1px solid var(--border-color)', textAlign: 'center', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
                 <div className="container">

@@ -15,16 +15,24 @@ const PaymentPage = () => {
     const [courseTitle, setCourseTitle] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [coursePrice, setCoursePrice] = useState(99);
+    const [loadingCourse, setLoadingCourse] = useState(!!courseId);
 
     useEffect(() => {
         if (courseId) {
             const fetchCourse = async () => {
                 const snap = await getDoc(doc(db, 'courses', courseId));
                 if (snap.exists()) {
-                    setCourseTitle(snap.data().title);
+                    const data = snap.data();
+                    setCourseTitle(data.title);
+                    setCoursePrice(data.price || 99);
+                    setAmount(data.price || 99); // Auto-fill amount for convenience
                 }
+                setLoadingCourse(false);
             };
             fetchCourse();
+        } else {
+            setAmount(99); // Default subscription price
         }
     }, [courseId]);
 
@@ -86,6 +94,19 @@ const PaymentPage = () => {
                 <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                     <h2 className="heading-lg">{courseTitle ? `Enroll in ${courseTitle}` : 'Manual Payment'}</h2>
                     <p className="text-muted">Choose your preferred payment method below and upload a receipt.</p>
+
+                    <div style={{
+                        marginTop: '1.5rem',
+                        backgroundColor: '#f8fafc',
+                        padding: '1rem',
+                        borderRadius: 'var(--radius)',
+                        border: '1px solid var(--border-color)',
+                        display: 'inline-block',
+                        minWidth: '200px'
+                    }}>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Total to Pay</p>
+                        <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)' }}>${coursePrice}</h2>
+                    </div>
                 </div>
 
                 {/* Payment Methods Grid */}
