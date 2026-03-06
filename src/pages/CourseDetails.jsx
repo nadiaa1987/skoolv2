@@ -128,7 +128,7 @@ const CourseDetails = () => {
 
     const hierItems = organizeItems(items);
 
-    const renderSidebarItem = (item, depth = 0) => {
+    const renderSidebarItem = (item, depth = 0, indexStr = '') => {
         const isExpanded = !!expandedFolders[item.id];
         const isSelected = selectedItem?.id === item.id;
 
@@ -171,7 +171,10 @@ const CourseDetails = () => {
                                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSelected ? '#92400e' : '#cbd5e1' }}></div>
                             </div>
                         )}
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {indexStr && <span style={{ marginRight: '6px', opacity: 0.8 }}>{indexStr}</span>}
+                            {item.title}
+                        </span>
                     </div>
 
                     {item.type === 'page' && isSelected && (
@@ -182,7 +185,7 @@ const CourseDetails = () => {
                 </div>
                 {item.type === 'folder' && isExpanded && item.children && (
                     <div className="folder-children">
-                        {item.children.map(child => renderSidebarItem(child, depth + 1))}
+                        {item.children.map((child, idx) => renderSidebarItem(child, depth + 1, `${indexStr}${idx + 1}.`))}
                     </div>
                 )}
             </React.Fragment>
@@ -218,7 +221,7 @@ const CourseDetails = () => {
                         </div>
 
                         <div className="lesson-list" style={{ padding: '0 0.5rem 1rem 0.5rem' }}>
-                            {hierItems.map(item => renderSidebarItem(item))}
+                            {hierItems.map((item, idx) => renderSidebarItem(item, 0, `${idx + 1}.`))}
                         </div>
                     </div>
                 </div>

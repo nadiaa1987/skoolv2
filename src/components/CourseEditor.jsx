@@ -225,7 +225,7 @@ const CourseEditor = ({ course, onBack }) => {
 
     const hierItems = organizeItems(items);
 
-    const renderSidebarItem = (item, depth = 0) => (
+    const renderSidebarItem = (item, depth = 0, indexStr = '') => (
         <React.Fragment key={item.id}>
             <div
                 onClick={() => handleSelectItem(item)}
@@ -249,14 +249,17 @@ const CourseEditor = ({ course, onBack }) => {
                 ) : (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 )}
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title}</span>
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {indexStr && <span style={{ marginRight: '6px', opacity: 0.7, fontWeight: 700 }}>{indexStr}</span>}
+                    {item.title}
+                </span>
                 <button className="btn-ghost" style={{ padding: '2px', color: 'var(--danger-color)' }} onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </button>
             </div>
             {item.children && item.children.length > 0 && (
                 <div className="nested-items">
-                    {item.children.map(child => renderSidebarItem(child, depth + 1))}
+                    {item.children.map((child, idx) => renderSidebarItem(child, depth + 1, `${indexStr}${idx + 1}.`))}
                 </div>
             )}
         </React.Fragment>
@@ -287,7 +290,7 @@ const CourseEditor = ({ course, onBack }) => {
                 </div>
 
                 <div className="sidebar-items" style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>
-                    {hierItems.map(item => renderSidebarItem(item))}
+                    {hierItems.map((item, idx) => renderSidebarItem(item, 0, `${idx + 1}.`))}
                 </div>
             </div>
 
