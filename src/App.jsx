@@ -20,10 +20,10 @@ const ProtectedRoute = ({ children, requireAuth, requireAdmin, requireActive }) 
   if (loading) return <div className="container text-center mt-2">Loading...</div>;
 
   if (requireAuth && !user) return <Navigate to="/auth" />;
-  if (requireAdmin && user?.role !== 'admin') return <Navigate to="/dashboard" />;
+  if (requireAdmin && user?.role !== 'admin') return <Navigate to="/courses" />;
   if (requireActive) {
     if (user?.role === 'admin') return children; // Admins always have access
-    if (user?.blocked) return <Navigate to="/dashboard" />;
+    if (user?.blocked) return <Navigate to="/courses" />;
     if (user?.subscription_status !== 'active') return <Navigate to="/payment" />;
   }
 

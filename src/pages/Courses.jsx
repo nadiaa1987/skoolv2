@@ -107,18 +107,32 @@ const Courses = () => {
                                             </div>
 
                                             <div className="flex justify-between items-center">
-                                                <div className="flex gap-1">
+                                                <div className="flex gap-1 items-center">
                                                     {isPaid && (
-                                                        <span style={{
-                                                            fontSize: '0.75rem',
-                                                            padding: '0.25rem 0.6rem',
-                                                            borderRadius: '6px',
-                                                            backgroundColor: isUnlocked ? '#d1fae5' : '#fee2e2',
-                                                            color: isUnlocked ? '#065f46' : '#991b1b',
-                                                            fontWeight: 700
-                                                        }}>
-                                                            {isUnlocked ? 'UNLOCKED' : `$${course.price || 99}`}
-                                                        </span>
+                                                        <div className="flex flex-col">
+                                                            <div className="flex items-center gap-0.5">
+                                                                <span style={{
+                                                                    fontSize: '1rem',
+                                                                    padding: '0.25rem 0.6rem',
+                                                                    borderRadius: '6px',
+                                                                    backgroundColor: isUnlocked ? '#d1fae5' : '#fee2e2',
+                                                                    color: isUnlocked ? '#065f46' : '#991b1b',
+                                                                    fontWeight: 700
+                                                                }}>
+                                                                    {isUnlocked ? 'UNLOCKED' : `$${Math.round((course.price || 99) * 0.7)}`}
+                                                                </span>
+                                                                {!isUnlocked && (
+                                                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', textDecoration: 'line-through', fontWeight: 500 }}>
+                                                                        ${course.price || 99}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {!isUnlocked && (
+                                                                <span style={{ fontSize: '0.65rem', color: '#ef4444', fontWeight: 700, marginTop: '2px' }}>
+                                                                    SAVE 30% TODAY
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     )}
                                                     {!isPaid && (
                                                         <span style={{

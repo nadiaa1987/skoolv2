@@ -64,6 +64,29 @@ const CourseDetails = () => {
         };
     }, [id]);
 
+    const [expandedFolders, setExpandedFolders] = useState({});
+
+    const toggleFolder = (folderId) => {
+        setExpandedFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }));
+    };
+
+    // Organize items into hierarchy
+    const organizeItems = (flatItems) => {
+        const itemMap = {};
+        flatItems.forEach(item => {
+            itemMap[item.id] = { ...item, children: [] };
+        });
+        const rootItems = [];
+        flatItems.forEach(item => {
+            if (item.parentId && itemMap[item.parentId]) {
+                itemMap[item.parentId].children.push(itemMap[item.id]);
+            } else {
+                rootItems.push(itemMap[item.id]);
+            }
+        });
+        return rootItems;
+    };
+
     if (loading) return <div className="container mt-2 text-center">Loading course...</div>;
     if (!course) return <div className="container mt-2 text-center text-danger">Course not found or inactive.</div>;
 
@@ -101,7 +124,70 @@ const CourseDetails = () => {
         return url.includes('cloudflarestorage.com') || url.includes('r2.dev') || url.match(/\.(mp4|webm|ogg|mov|avi)$/i);
     };
 
-    const normalizedVideo = normalizeVideoUrl(selectedItem.video_url);
+    const normalizedVideo = selectedItem ? normalizeVideoUrl(selectedItem.video_url) : '';
+
+    const hierItems = organizeItems(items);
+
+    const renderSidebarItem = (item, depth = 0) => {
+        const isExpanded = !!expandedFolders[item.id];
+        const isSelected = selectedItem?.id === item.id;
+
+        return (
+            <React.Fragment key={item.id}>
+                <div
+                    onClick={() => {
+                        if (item.type === 'folder') {
+                            toggleFolder(item.id);
+                        } else {
+                            setSelectedItem(item);
+                        }
+                    }}
+                    style={{
+                        padding: '0.85rem 1rem',
+                        paddingLeft: `${depth * 1.5 + 1}rem`,
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '10px',
+                        marginBottom: '0.15rem',
+                        backgroundColor: isSelected ? '#fef3c7' : 'transparent',
+                        color: isSelected ? '#92400e' : (item.type === 'folder' ? 'var(--text-main)' : '#64748b'),
+                        fontWeight: item.type === 'folder' ? '700' : '500',
+                        fontSize: depth > 0 ? '0.85rem' : '0.95rem',
+                        border: 'none',
+                        transition: 'all 0.2s'
+                    }}
+                    className="sidebar-item-hover"
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                        {item.type === 'folder' ? (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, transform: isExpanded ? 'none' : 'rotate(-90deg)', transition: 'transform 0.2s' }}>
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        ) : (
+                            <div style={{ width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isSelected ? '#92400e' : '#cbd5e1' }}></div>
+                            </div>
+                        )}
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
+                    </div>
+
+                    {item.type === 'page' && isSelected && (
+                        <div style={{ color: '#10b981', flexShrink: 0 }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
+                        </div>
+                    )}
+                </div>
+                {item.type === 'folder' && isExpanded && item.children && (
+                    <div className="folder-children">
+                        {item.children.map(child => renderSidebarItem(child, depth + 1))}
+                    </div>
+                )}
+            </React.Fragment>
+        );
+    };
 
     return (
         <div className="container-fluid mobile-classroom" style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
@@ -132,40 +218,7 @@ const CourseDetails = () => {
                         </div>
 
                         <div className="lesson-list" style={{ padding: '0 0.5rem 1rem 0.5rem' }}>
-                            {items.map(item => (
-                                <div
-                                    key={item.id}
-                                    onClick={() => item.type === 'page' && setSelectedItem(item)}
-                                    style={{
-                                        padding: '0.85rem 1rem',
-                                        borderRadius: '12px',
-                                        cursor: item.type === 'page' ? 'pointer' : 'default',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        gap: '10px',
-                                        marginBottom: '0.15rem',
-                                        backgroundColor: selectedItem?.id === item.id ? '#fef3c7' : 'transparent',
-                                        color: selectedItem?.id === item.id ? '#92400e' : 'var(--text-main)',
-                                        fontWeight: item.type === 'folder' ? '700' : '500',
-                                        border: 'none',
-                                        transition: 'all 0.2s'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-                                        {item.type === 'folder' ? (
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                                        ) : null}
-                                        <span style={{ fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
-                                    </div>
-
-                                    {item.type === 'page' && (
-                                        <div style={{ color: '#10b981', flexShrink: 0 }}>
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            {hierItems.map(item => renderSidebarItem(item))}
                         </div>
                     </div>
                 </div>
@@ -239,60 +292,101 @@ const CourseDetails = () => {
                                 }}
                                 dangerouslySetInnerHTML={{ __html: selectedItem.body }}
                             />
-
-                            <style>{`
-                                .content-body img {
-                                    max-width: 100%;
-                                    height: auto;
-                                    border-radius: 8px;
-                                    margin: 1.5rem 0;
-                                    display: block;
-                                }
-                                .content-body p {
-                                    margin-bottom: 1rem;
-                                }
-                                .content-body a {
-                                    color: var(--primary-color);
-                                    text-decoration: underline;
-                                }
-
-                                /* Mobile Responsiveness */
-                                @media (max-width: 768px) {
-                                    .classroom-layout {
-                                        flex-direction: column !important;
-                                        padding: 0 1rem;
-                                        gap: 1.5rem !important;
-                                    }
-                                    .classroom-sidebar {
-                                        width: 100% !important;
-                                        order: 2;
-                                    }
-                                    .classroom-sidebar .card {
-                                        position: static !important;
-                                        margin-bottom: 2rem;
-                                    }
-                                    .classroom-main {
-                                        width: 100% !important;
-                                        max-width: 100% !important;
-                                        order: 1;
-                                    }
-                                    .classroom-main .card {
-                                        padding: 1.25rem !important;
-                                    }
-                                    .classroom-content-header {
-                                        margin-bottom: 1rem !important;
-                                    }
-                                    .classroom-content-header h1 {
-                                        font-size: 1.2rem !important;
-                                    }
-                                }
-                            `}</style>
                         </div>
                     ) : (
-                        <div className="card text-center" style={{ padding: '5rem 2rem' }}>
-                            <h2 className="text-muted">Select a lesson to begin</h2>
+                        <div className="card" style={{ padding: '3rem 2rem', border: 'none', background: 'white' }}>
+                            <h2 style={{ marginBottom: '2.5rem', fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-main)' }}>Curriculum</h2>
+                            <div className="curriculum-list">
+                                {hierItems.map((item, index) => (
+                                    <div key={item.id} style={{ marginBottom: '2.5rem' }}>
+                                        <h3 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.25rem', color: 'var(--text-main)' }}>
+                                            {index + 1}. {item.title}
+                                        </h3>
+                                        <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
+                                            {item.children?.map(child => (
+                                                <li
+                                                    key={child.id}
+                                                    onClick={() => setSelectedItem(child)}
+                                                    style={{
+                                                        marginBottom: '0.85rem',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '12px',
+                                                        fontSize: '1rem',
+                                                        color: '#475569',
+                                                        paddingLeft: '1rem'
+                                                    }}
+                                                    className="curriculum-item"
+                                                >
+                                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#cbd5e1', flexShrink: 0 }}></span>
+                                                    {child.title}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <hr style={{ border: 'none', borderBottom: '1px solid #f1f5f9', marginTop: '2rem' }} />
+                                    </div>
+                                ))}
+                                {hierItems.length === 0 && (
+                                    <p className="text-muted text-center">No content has been added to this course yet.</p>
+                                )}
+                            </div>
                         </div>
                     )}
+
+                    <style>{`
+                        .curriculum-item:hover {
+                            color: var(--primary-color) !important;
+                        }
+                        .curriculum-item:hover span {
+                            backgroundColor: var(--primary-color) !important;
+                        }
+                        .content-body img {
+                            max-width: 100%;
+                            height: auto;
+                            border-radius: 8px;
+                            margin: 1.5rem 0;
+                            display: block;
+                        }
+                        .content-body p {
+                            margin-bottom: 1rem;
+                        }
+                        .content-body a {
+                            color: var(--primary-color);
+                            text-decoration: underline;
+                        }
+
+                        /* Mobile Responsiveness */
+                        @media (max-width: 768px) {
+                            .classroom-layout {
+                                flex-direction: column !important;
+                                padding: 0 1rem;
+                                gap: 1.5rem !important;
+                            }
+                            .classroom-sidebar {
+                                width: 100% !important;
+                                order: 2;
+                            }
+                            .classroom-sidebar .card {
+                                position: static !important;
+                                margin-bottom: 2rem;
+                            }
+                            .classroom-main {
+                                width: 100% !important;
+                                max-width: 100% !important;
+                                order: 1;
+                            }
+                            .classroom-main .card {
+                                padding: 1.25rem !important;
+                            }
+                            .classroom-content-header {
+                                margin-bottom: 1rem !important;
+                            }
+                            .classroom-content-header h1 {
+                                font-size: 1.2rem !important;
+                            }
+                        }
+                    `}</style>
                 </div>
             </div>
         </div>

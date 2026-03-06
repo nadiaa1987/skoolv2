@@ -28,7 +28,7 @@ const Auth = () => {
                 setUser({ uid: user.uid, ...data });
 
                 if (data.role === 'admin') navigate('/admin');
-                else navigate('/dashboard');
+                else navigate('/courses');
             } else {
                 // New User (Register)
                 const userData = {
@@ -45,7 +45,7 @@ const Auth = () => {
 
                 await setDoc(docRef, userData);
                 setUser(userData);
-                navigate('/dashboard');
+                navigate('/courses');
             }
         } catch (err) {
             console.error(err);
