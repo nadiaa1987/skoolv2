@@ -24,6 +24,7 @@ const DashboardAdmin = () => {
     const [submitting, setSubmitting] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
     const [fakeMembers, setFakeMembers] = useState(0);
+    const [showDiscount, setShowDiscount] = useState(false);
 
     // OneSignal Push Notification state
     const [pushTitle, setPushTitle] = useState('');
@@ -156,6 +157,7 @@ const DashboardAdmin = () => {
                 is_active: published,
                 access_level: accessLevel,
                 fake_members_count: Number(fakeMembers),
+                show_discount: showDiscount,
                 updated_at: new Date().toISOString()
             };
 
@@ -181,7 +183,7 @@ const DashboardAdmin = () => {
 
             setShowModal(false);
             setEditingCourse(null);
-            setTitle(''); setDescription(''); setCoverImage(''); setVideoUrl(''); setPrice(99); setAccessLevel('Open'); setPublished(true); setFakeMembers(0);
+            setTitle(''); setDescription(''); setCoverImage(''); setVideoUrl(''); setPrice(99); setAccessLevel('Open'); setPublished(true); setFakeMembers(0); setShowDiscount(false);
             fetchData();
         } catch (error) {
             console.error("Error saving course", error);
@@ -199,6 +201,7 @@ const DashboardAdmin = () => {
         setVideoUrl(course.video_url || '');
         setPrice(course.price || 99);
         setFakeMembers(course.fake_members_count || 0);
+        setShowDiscount(course.show_discount || false);
         setPublished(course.is_active !== undefined ? course.is_active : true);
         setShowModal(true);
     };
@@ -523,6 +526,17 @@ const DashboardAdmin = () => {
                                         style={{ fontSize: '1.1rem', fontWeight: 600 }}
                                     />
                                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>Real members who join will be added on top of this number.</p>
+                                </div>
+
+                                <div className="flex gap-2 items-center mt-1" style={{ backgroundColor: '#f0fdf4', padding: '1.25rem', borderRadius: 'var(--radius)', border: '1px solid #bbf7d0' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <h4 style={{ fontWeight: 700, marginBottom: '0.25rem', color: '#166534' }}>Enable 30% Discount UI</h4>
+                                        <p style={{ fontSize: '0.85rem', color: '#166534' }}>Show original price crossed out and "SAVE 30% TODAY" badge.</p>
+                                    </div>
+                                    <label className="switch">
+                                        <input type="checkbox" checked={showDiscount} onChange={e => setShowDiscount(e.target.checked)} />
+                                        <span className="slider"></span>
+                                    </label>
                                 </div>
 
                                 <div className="flex gap-2 items-center mt-1" style={{ backgroundColor: '#f9fafb', padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)' }}>

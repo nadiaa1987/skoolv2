@@ -119,15 +119,19 @@ const Courses = () => {
                                                                     color: isUnlocked ? '#065f46' : '#991b1b',
                                                                     fontWeight: 700
                                                                 }}>
-                                                                    {isUnlocked ? 'UNLOCKED' : `$${Math.round((course.price || 99) * 0.7)}`}
+                                                                    {isUnlocked ? 'UNLOCKED' : (
+                                                                        course.show_discount
+                                                                            ? `$${Math.round((course.price || 99) * 0.7)}`
+                                                                            : `$${course.price || 99}`
+                                                                    )}
                                                                 </span>
-                                                                {!isUnlocked && (
+                                                                {!isUnlocked && course.show_discount && (
                                                                     <span style={{ fontSize: '0.8rem', color: '#94a3b8', textDecoration: 'line-through', fontWeight: 500 }}>
                                                                         ${course.price || 99}
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            {!isUnlocked && (
+                                                            {!isUnlocked && course.show_discount && (
                                                                 <span style={{ fontSize: '0.65rem', color: '#ef4444', fontWeight: 700, marginTop: '2px' }}>
                                                                     SAVE 30% TODAY
                                                                 </span>
