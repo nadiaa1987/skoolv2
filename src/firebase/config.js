@@ -4,13 +4,13 @@ import { initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDEp7sRXCiuZsUK7l7FiAZlKNc9r-DHs1M",
-    authDomain: "skool-6de0b.firebaseapp.com",
-    projectId: "skool-6de0b",
-    storageBucket: "skool-6de0b.firebasestorage.app",
-    messagingSenderId: "7055405832",
-    appId: "1:7055405832:web:954058558bba61deff32bd",
-    measurementId: "G-MTJLTCSLXJ"
+    apiKey: "AIzaSyBOAbhk0DY5-Rb7kA52pr8bntvQPWUphM8",
+    authDomain: "skoolit-48a57.firebaseapp.com",
+    projectId: "skoolit-48a57",
+    storageBucket: "skoolit-48a57.firebasestorage.app",
+    messagingSenderId: "357070931068",
+    appId: "1:357070931068:web:b8edc066330c2e0672b5f9",
+    measurementId: "G-Q0D6P3MYGP"
 };
 
 import { getMessaging } from "firebase/messaging";
