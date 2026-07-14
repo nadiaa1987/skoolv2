@@ -110,26 +110,7 @@ const PaymentPage = () => {
                 </div>
 
                 {/* Payment Methods Grid */}
-                <div className="grid grid-cols-2 gap-1 mb-2">
-                    {/* Wise Card */}
-                    <div className="card" style={{ border: '2px solid #00b9ff', backgroundColor: 'rgba(0, 185, 255, 0.02)', padding: '1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🌐</div>
-                        <h4 style={{ color: '#00b9ff', fontWeight: 700 }}>Wise (TransferWise)</h4>
-                        <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Fast & low-cost currency transfers.</p>
-                        <div style={{ backgroundColor: 'white', padding: '0.5rem', borderRadius: 'var(--radius)', border: '1px solid #e5e7eb', fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600, wordBreak: 'break-all' }}>
-                            NADIA KHALYL
-                        </div>
-                        <a
-                            href="https://wise.com/pay/me/nadiak396"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-primary mt-1"
-                            style={{ backgroundColor: '#00b9ff', width: '100%', fontSize: '0.85rem', padding: '0.6rem' }}
-                        >
-                            Pay with Wise
-                        </a>
-                    </div>
-
+                <div className="grid grid-cols-1 gap-1 mb-2">
                     {/* USDT Card */}
                     <div className="card" style={{ border: '2px solid #26a17b', backgroundColor: 'rgba(38, 161, 123, 0.02)', padding: '1.5rem', textAlign: 'center' }}>
                         <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>₮</div>
