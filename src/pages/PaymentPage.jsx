@@ -105,7 +105,7 @@ const PaymentPage = () => {
                         minWidth: '200px'
                     }}>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Total to Pay</p>
-                        <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)' }}>${coursePrice}</h2>
+                        <h2 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)' }}>€{coursePrice}</h2>
                     </div>
                 </div>
 
@@ -142,7 +142,7 @@ const PaymentPage = () => {
                 <form onSubmit={handleSubmit} className="flex-col gap-1 flex">
                     <div className="grid grid-cols-2 gap-1">
                         <div>
-                            <label className="text-muted" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Amount Paid ($)</label>
+                            <label className="text-muted" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Amount Paid (€)</label>
                             <input
                                 type="number"
                                 placeholder="e.g. 99"

@@ -325,7 +325,7 @@ const DashboardAdmin = () => {
                                         <tr key={p.id}>
                                             <td>{p.user_email}</td>
                                             <td style={{ fontWeight: 600 }}>{p.course_title}</td>
-                                            <td style={{ color: 'var(--success-color)', fontWeight: 700 }}>${p.amount}</td>
+                                            <td style={{ color: 'var(--success-color)', fontWeight: 700 }}>€{p.amount}</td>
                                             <td style={{ fontSize: '0.8rem' }}>{new Date(p.created_at).toLocaleDateString()}</td>
                                             <td>
                                                 <a href={p.screenshot_url} target="_blank" rel="noreferrer" style={{ color: 'var(--primary-color)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -502,9 +502,9 @@ const DashboardAdmin = () => {
 
                                 {accessLevel === 'Buy now' && (
                                     <div className="animate-up" style={{ backgroundColor: '#f9fafb', padding: '1.25rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)', marginTop: '1rem' }}>
-                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 700, fontSize: '0.9rem' }}>Price ($)</label>
+                                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 700, fontSize: '0.9rem' }}>Price (€)</label>
                                         <div style={{ position: 'relative' }}>
-                                            <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 600, color: 'var(--text-muted)' }}>$</span>
+                                            <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 600, color: 'var(--text-muted)' }}>€</span>
                                             <input
                                                 type="number"
                                                 placeholder="99"

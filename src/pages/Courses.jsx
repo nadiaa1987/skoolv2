@@ -121,8 +121,8 @@ const Courses = () => {
                                                                 }}>
                                                                     {isUnlocked ? 'UNLOCKED' : (
                                                                         course.show_discount
-                                                                            ? `$${Math.round((course.price || 99) * 0.7)}`
-                                                                            : `$${course.price || 99}`
+                                                                             ? `€${Math.round((course.price || 99) * 0.7)}`
+                                                                             : `€${course.price || 99}`
                                                                     )}
                                                                 </span>
                                                                 {!isUnlocked && course.show_discount && (
