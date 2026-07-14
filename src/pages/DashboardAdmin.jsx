@@ -313,13 +313,15 @@ const DashboardAdmin = () => {
                                     <th>Amount</th>
                                     <th>Date</th>
                                     <th>Receipt</th>
+                                    <th>Instagram</th>
+                                    <th>WhatsApp</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {payments.length === 0 ? (
-                                    <tr><td colSpan="7" className="text-center text-muted">No payment records found.</td></tr>
+                                    <tr>                                    <td colSpan="9" className="text-center text-muted">No payment records found.</td></tr>
                                 ) : (
                                     payments.map(p => (
                                         <tr key={p.id}>
@@ -333,6 +335,8 @@ const DashboardAdmin = () => {
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                                 </a>
                                             </td>
+                                            <td style={{ fontSize: '0.85rem' }}>{p.instagram || '-'}</td>
+                                            <td style={{ fontSize: '0.85rem' }}>{p.whatsapp || '-'}</td>
                                             <td><span className={`badge ${p.status}`}>{p.status}</span></td>
                                             <td>
                                                 {p.status === 'pending' && (

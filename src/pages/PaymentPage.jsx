@@ -12,6 +12,8 @@ const PaymentPage = () => {
 
     const [amount, setAmount] = useState('');
     const [screenshotUrl, setScreenshotUrl] = useState('');
+    const [instagram, setInstagram] = useState('');
+    const [whatsapp, setWhatsapp] = useState('');
     const [courseTitle, setCourseTitle] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -55,6 +57,8 @@ const PaymentPage = () => {
                 course_title: courseTitle || 'Full Access',
                 amount: Number(amount),
                 screenshot_url: screenshotUrl,
+                instagram: instagram,
+                whatsapp: whatsapp,
                 status: 'pending',
                 created_at: new Date().toISOString(),
                 approved_at: null
@@ -160,6 +164,29 @@ const PaymentPage = () => {
                                 required
                                 value={screenshotUrl}
                                 onChange={e => setScreenshotUrl(e.target.value)}
+                                style={{ padding: '0.8rem' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1">
+                        <div>
+                            <label className="text-muted" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Instagram Profile</label>
+                            <input
+                                type="text"
+                                placeholder="@username"
+                                value={instagram}
+                                onChange={e => setInstagram(e.target.value)}
+                                style={{ padding: '0.8rem' }}
+                            />
+                        </div>
+                        <div>
+                            <label className="text-muted" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>WhatsApp Number</label>
+                            <input
+                                type="text"
+                                placeholder="+212 600 000 000"
+                                value={whatsapp}
+                                onChange={e => setWhatsapp(e.target.value)}
                                 style={{ padding: '0.8rem' }}
                             />
                         </div>
