@@ -40,8 +40,8 @@ const PaymentPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!screenshotUrl || !amount) {
-            setError('Please provide amount and receipt image URL');
+        if (!screenshotUrl) {
+            setError('Please provide receipt image URL');
             return;
         }
 
@@ -144,29 +144,16 @@ const PaymentPage = () => {
                 {error && <div className="text-danger mb-1" style={{ textAlign: 'center', backgroundColor: 'rgba(239, 68, 68, 0.05)', padding: '0.75rem', borderRadius: 'var(--radius)' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit} className="flex-col gap-1 flex">
-                    <div className="grid grid-cols-2 gap-1">
-                        <div>
-                            <label className="text-muted" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Amount Paid (€)</label>
-                            <input
-                                type="number"
-                                placeholder="e.g. 99"
-                                required
-                                value={amount}
-                                onChange={e => setAmount(e.target.value)}
-                                style={{ padding: '0.8rem' }}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-muted" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Screenshot URL</label>
-                            <input
-                                type="text"
-                                placeholder="Link to receipt..."
-                                required
-                                value={screenshotUrl}
-                                onChange={e => setScreenshotUrl(e.target.value)}
-                                style={{ padding: '0.8rem' }}
-                            />
-                        </div>
+                    <div>
+                        <label className="text-muted" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>Screenshot URL</label>
+                        <input
+                            type="text"
+                            placeholder="Link to receipt..."
+                            required
+                            value={screenshotUrl}
+                            onChange={e => setScreenshotUrl(e.target.value)}
+                            style={{ padding: '0.8rem' }}
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-1">
