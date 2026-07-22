@@ -84,7 +84,7 @@ const PaymentPage = () => {
     };
 
     const [copySuccess, setCopySuccess] = useState('');
-    const trc20Address = "TCtoXDm4EKRRJWAs3ueN49C4y72zDVNhfz";
+    const trc20Address = "TRD2zCFc2v6V82gtENhMjSJVZ9fNo9EBLU";
 
     const handleCopy = () => {
         navigator.clipboard.writeText(trc20Address);
@@ -117,7 +117,7 @@ const PaymentPage = () => {
                 <div className="grid grid-cols-1 gap-1 mb-2">
                     {/* USDT Card */}
                     <div className="card" style={{ border: '2px solid #26a17b', backgroundColor: 'rgba(38, 161, 123, 0.02)', padding: '1.5rem', textAlign: 'center' }}>
-                        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>₮</div>
+                        <img src="https://i.imgur.com/j9RuZDd.jpeg" alt="USDT QR Code" style={{ width: '180px', height: '180px', borderRadius: '12px', marginBottom: '1rem', objectFit: 'cover' }} />
                         <h4 style={{ color: '#26a17b', fontWeight: 700 }}>USDT (TRC20)</h4>
                         <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Instant crypto payment via Tron network.</p>
                         <div style={{ position: 'relative' }}>
