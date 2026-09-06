@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    match /receipts/{userId}/{fileName} {
+      allow read: if request.auth.uid == userId || (isAuthenticated() && request.auth.token.role == 'admin'); // Assuming basic role claim or we can just allow read if authenticated for simplicity
+      allow write: if request.auth.uid == userId;
+    }
+  }
+}
